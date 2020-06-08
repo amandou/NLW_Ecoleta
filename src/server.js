@@ -1,6 +1,9 @@
 const express = require("express")
 const server = express()
 
+const db = requier("./database/db.js")
+
+
 //configurar pasta pública
 server.use(express.static("public"))
 
