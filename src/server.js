@@ -1,8 +1,9 @@
 const express = require("express")
 const server = express()
 
-const db = requier("./database/db.js")
-
+const db = require("./database/db.js")
+//habilitar o uso do req body
+server.use(express.urlencoded({extended : true}))
 
 //configurar pasta pública
 server.use(express.static("public"))
@@ -21,11 +22,67 @@ server.get("/", (req,res) =>{
 })
 
 server.get("/create-point", (req,res) =>{
+    console.log(req.query)
     return res.render("create-point.html")
 })
 
+server.post("/save-point",(req,res) => {
+    console.log(req.body)
+
+    const query = `
+    INSERT INTO places (
+        image,
+        name,
+        adress,
+        adress2,
+        state,
+        city,
+        items
+    ) VALUES (?, ?, ?, ?, ?, ?,?);`
+
+    const values = [
+        req.body.image,
+        req.body.name,
+        req.body.adress,
+        req.body.adress2,
+        req.body.state,
+        req.body.city,
+        req.body.items
+    ]
+    
+    function afterInsertData(err){
+        if(err){
+            console.log(err)
+            return res.send("Erro no cadastro.html")
+
+        }
+            
+
+        console.log("Cadastrado com sucesso")
+        console.log(this)
+
+        return res.render("create-point.html", {saved : true})
+    }
+
+    db.run(query,values,afterInsertData)
+
+    
+})
+
+
 server.get("/search", (req,res) =>{
-    return res.render("search-results.html")
+    function showData(err,rows){
+        if(err)
+            return console.log(err)
+        console.log("Aqui estão seus dados")
+        console.log(rows)
+        
+        const total = rows.length
+
+        //mostrar na pagina html os dados do bando de dados
+        return res.render("search-results.html",{places:rows,total:total})
+    }
+    db.all("SELECT * FROM places",showData)
 })
 
 server.listen(3000)
