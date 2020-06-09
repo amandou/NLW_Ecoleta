@@ -71,6 +71,14 @@ server.post("/save-point",(req,res) => {
 
 
 server.get("/search", (req,res) =>{
+    const search = req.query.search
+
+    if (search == "")
+    {
+        return res.render("search-results.html",{total: 0 })
+    }
+
+
     function showData(err,rows){
         if(err)
             return console.log(err)
@@ -82,7 +90,7 @@ server.get("/search", (req,res) =>{
         //mostrar na pagina html os dados do bando de dados
         return res.render("search-results.html",{places:rows,total:total})
     }
-    db.all("SELECT * FROM places",showData)
+    db.all(`SELECT * FROM places WHERE city LIKE '%${search}%'`,showData)
 })
 
 server.listen(3000)
